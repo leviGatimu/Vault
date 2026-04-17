@@ -8,6 +8,7 @@ export async function GET() {
     try {
         // Security Check: Block anyone not logged in
         const session = await getServerSession(authOptions);
+        console.log("DEBUG: Admin Session Found ->", session);
         if (!session?.user?.email) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
