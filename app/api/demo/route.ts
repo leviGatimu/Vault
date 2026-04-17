@@ -47,3 +47,33 @@ export async function PATCH(req: Request) {
         return NextResponse.json({ error: "Failed to update status" }, { status: 500 });
     }
 }
+// POST: Saves a new waitlist request from a user
+export async function POST(req: Request) {
+    try {
+        const body = await req.json();
+        const { email } = body;
+
+        if (!email) {
+            return NextResponse.json({ error: "Email is required" }, { status: 400 });
+        }
+
+        // Save to Supabase via Prisma
+        const newRequest = await db.demoRequest.create({
+            data: {
+                email: email,
+                approved: false, // Set to false by default
+            },
+        });
+
+        return NextResponse.json({ success: true, data: newRequest });
+    } catch (error: any) {
+        console.error("=== WAITLIST POST ERROR ===", error);
+
+        // Check if user is already on the list (P2002 is Prisma's unique constraint error)
+        if (error.code === 'P2002') {
+            return NextResponse.json({ error: "You're already on the waitlist!" }, { status: 400 });
+        }
+
+        return NextResponse.json({ error: "Failed to join waitlist" }, { status: 500 });
+    }
+}
