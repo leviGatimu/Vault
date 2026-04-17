@@ -9,6 +9,7 @@ import {
     Sun, Moon, ShieldCheck, Database, Server, Clock, LogOut, Loader2
 } from "lucide-react";
 import Link from "next/link";
+import PasswordGenerator from "@/components/PasswordGenerator";
 
 // Simulated Data to fill the UI
 const AUDIT_LOGS = [
@@ -340,7 +341,17 @@ export default function AdminDashboard() {
                                     <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span> Live Audit Log
                                 </span>
                             </div>
+                            <div className="flex items-center justify-between mb-8">
+                                <h1 className="text-3xl font-medium">Security Matrix</h1>
+                                <span className="px-3 py-1.5 bg-red-500/10 text-red-500 border border-red-500/20 rounded-full text-xs font-mono flex items-center gap-2">
+                                    <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span> Live Audit Log
+                                </span>
+                            </div>
 
+                            {/* ADD THE GENERATOR HERE */}
+                            <div className="mb-8 flex justify-center lg:justify-start">
+                                <PasswordGenerator />
+                            </div>
                             <div className="glass-panel border border-black/10 dark:border-white/10 rounded-3xl overflow-hidden bg-white/40 dark:bg-black/40 backdrop-blur-md font-mono text-sm">
                                 <table className="w-full text-left">
                                     <thead className="bg-black/5 dark:bg-white/5 border-b border-black/10 dark:border-white/10 text-black/50 dark:text-white/50 text-xs uppercase tracking-wider">
