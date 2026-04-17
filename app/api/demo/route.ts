@@ -54,7 +54,7 @@ export async function PUT(req: Request) {
                         <p style="color: #888;">Identity Verified: ${updatedRequest.email}</p>
                         <p>Your clearance has been approved by the Overseer.</p>
                         <p>You may now securely access the network.</p>
-                        <a href="https://vault-one-peach.vercel.app" style="display: inline-block; background: #fff; color: #000; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 20px; font-family: sans-serif;">Enter The Vault</a>
+                        <a href="https://vault-one-peach.vercel.app/login" style="display: inline-block; background: #fff; color: #000; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; margin-top: 20px; font-family: sans-serif;">Enter The Vault</a>
                     </div>
                 `,
             });
