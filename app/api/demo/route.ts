@@ -1,38 +1,48 @@
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db"; // Importing the connection we just made
+import { db } from "@/lib/db";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
-export async function POST(req: Request) {
+// GET: Fetches all waitlist requests from Supabase
+export async function GET() {
     try {
-        // 1. Grab the email from the incoming request
-        const body = await req.json();
-        const { email } = body;
-
-        // 2. Make sure they actually sent an email
-        if (!email) {
-            return NextResponse.json({ error: "Email is required" }, { status: 400 });
+        // Security Check: Block anyone not logged in
+        const session = await getServerSession(authOptions);
+        if (!session?.user?.email) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        // 3. Save it to our Supabase database using Prisma
-        const newRequest = await db.demoRequest.create({
-            data: {
-                email: email,
-            },
+        const requests = await db.demoRequest.findMany({
+            orderBy: { createdAt: 'desc' } // Newest first
         });
 
-        // 4. Send a success message back to the frontend
-        return NextResponse.json({
-            success: true,
-            message: "Added to the waitlist!",
-            data: newRequest
-        }, { status: 201 });
+        return NextResponse.json(requests);
+    } catch (error) {
+        console.error("=== DEMO GET ERROR ===", error);
+        return NextResponse.json({ error: "Failed to fetch data" }, { status: 500 });
+    }
+}
 
-    } catch (error: any) {
-        // If the email is already in the database, Prisma will throw a specific error code (P2002)
-        if (error.code === 'P2002') {
-            return NextResponse.json({ error: "This email is already on the waitlist." }, { status: 400 });
+// PATCH: Updates a user's status to "Approved"
+export async function PATCH(req: Request) {
+    try {
+        // Security Check: Block unauthorized approvals
+        const session = await getServerSession(authOptions);
+        if (!session?.user?.email) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        console.error("API Error:", error);
-        return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
+        const body = await req.json();
+        const { id, approved } = body;
+
+        const updatedRequest = await db.demoRequest.update({
+            where: { id: id },
+            data: { approved: approved },
+        });
+
+        return NextResponse.json(updatedRequest);
+    } catch (error) {
+        console.error("=== DEMO PATCH ERROR ===", error);
+        return NextResponse.json({ error: "Failed to update status" }, { status: 500 });
     }
 }
