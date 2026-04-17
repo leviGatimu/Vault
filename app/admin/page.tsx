@@ -55,9 +55,27 @@ export default function AdminDashboard() {
 
     const handleApprove = async (id: string) => {
         try {
-            await fetch("/api/demo", { method: "PUT", body: JSON.stringify({ id, action: "approve" }) });
+            const res = await fetch("/api/demo", {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json" // Tells the server to expect JSON
+                },
+                body: JSON.stringify({
+                    id: id,
+                    approved: true // Matches exactly what the API expects!
+                })
+            });
+
+            if (!res.ok) {
+                console.error("Server refused to update.");
+                return;
+            }
+
+            // If successful, update the UI to green
             setWaitlist(waitlist.map(w => w.id === id ? { ...w, approved: true } : w));
-        } catch (error) { console.error("Failed to approve"); }
+        } catch (error) {
+            console.error("Failed to approve:", error);
+        }
     };
 
     const handleUploadTutorial = async (e: React.FormEvent) => {
