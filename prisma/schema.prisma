@@ -1,0 +1,40 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 1. The Waitlist
+model DemoRequest {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  approved  Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+// 2. The Real User Accounts (NextAuth)
+model User {
+  id            String       @id @default(cuid())
+  email         String       @unique
+  password      String       // We will encrypt their Master PIN here
+  createdAt     DateTime     @default(now())
+  credentials   Credential[] // Links the user to their specific vault items
+}
+
+// 3. Vault Data (Now locked to a specific User!)
+model Credential {
+  id        String   @id @default(cuid())
+  name      String
+  username  String
+  password  String
+  category  String
+  
+  // These two lines create the security link to the User
+  userId    String   
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+}

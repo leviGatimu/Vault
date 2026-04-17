@@ -1,6 +1,13 @@
 @import "tailwindcss";
+/* This tells Tailwind v4 to activate dark variants when the .dark class is present */
+@custom-variant dark (&:where(.dark, .dark *));
 
 :root {
+  --background: #f8fafc;
+  --foreground: #020617;
+}
+
+.dark {
   --background: #000000;
   --foreground: #ffffff;
 }
@@ -11,28 +18,51 @@ body {
   scroll-behavior: smooth;
 }
 
-/* Pure CSS for the glass effect so we don't trigger any 
-  v4 utility bugs. This gives the exact Apple aesthetic. 
+/* The Magic: This animates the color changes across the entire app.
+  We purposefully exclude "transform" so Framer Motion doesn't break! 
 */
+*,
+*::before,
+*::after {
+  transition-property: background-color, border-color, color, fill, stroke, box-shadow;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 700ms;
+}
+
+/* Light Mode Glass */
 .glass-panel {
-  background-color: rgba(255, 255, 255, 0.05);
+  background-color: rgba(0, 0, 0, 0.03);
   backdrop-filter: blur(64px);
   -webkit-backdrop-filter: blur(64px);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.05);
+  border-radius: 1.5rem;
+}
+
+/* Dark Mode Glass */
+.dark .glass-panel {
+  background-color: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-  border-radius: 1.5rem;
-  /* 24px */
 }
 
 .glass-button {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(0, 0, 0, 0.05);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  transition: all 0.3s ease;
+  border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 9999px;
 }
 
+.dark .glass-button {
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
 .glass-button:hover {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+.dark .glass-button:hover {
   background-color: rgba(255, 255, 255, 0.2);
 }
