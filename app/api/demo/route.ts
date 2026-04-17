@@ -17,7 +17,7 @@ export async function GET() {
 }
 
 // PATCH: Updates a user's status to "Approved"
-export async function PATCH(req: Request) {
+export async function PUT(req: Request) {
     try {
         const body = await req.json();
         const { id, approved } = body;
