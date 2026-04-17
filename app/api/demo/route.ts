@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-
+// ADD THIS LINE: It forces Next.js to always fetch fresh data
+export const dynamic = "force-dynamic";
 // GET: Fetches all waitlist requests from Supabase
 // Security Check temporarily removed to fix Vercel Session 401 bug
 export async function GET() {
