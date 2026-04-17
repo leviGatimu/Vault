@@ -17,11 +17,16 @@ model DemoRequest {
 
 // 2. The Real User Accounts (NextAuth)
 model User {
-  id            String       @id @default(cuid())
-  email         String       @unique
-  password      String       // We will encrypt their Master PIN here
-  createdAt     DateTime     @default(now())
-  credentials   Credential[] // Links the user to their specific vault items
+  id               String       @id @default(cuid())
+  email            String       @unique
+  password         String       
+  
+  // === NEW 2FA FIELDS ===
+  twoFactorSecret  String?      
+  twoFactorEnabled Boolean      @default(false) 
+  
+  createdAt        DateTime     @default(now())
+  credentials      Credential[] 
 }
 
 // 3. Vault Data (Now locked to a specific User!)
@@ -36,5 +41,21 @@ model Credential {
   userId    String   
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
+  createdAt DateTime @default(now())
+}
+// 4. Admin Content
+model Tutorial {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  videoUrl    String   // We will store the video link here
+  createdAt   DateTime @default(now())
+}
+// 5. Ephemeral Sharing (Self-Destructing Links)
+model BurnerLink {
+  id        String   @id @default(cuid())
+  name      String
+  username  String
+  password  String
   createdAt DateTime @default(now())
 }
