@@ -39,3 +39,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+# --- Overseer Extension Ignores ---
+vault-ext/node_modules/
+vault-ext/.plasmo/
+vault-ext/build/
+vault-ext/.env*

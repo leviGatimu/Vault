@@ -366,8 +366,20 @@ export default function VaultPage() {
                                                         <div>
                                                             <div className="flex items-start justify-between mb-6">
                                                                 <div className="flex items-center gap-4">
-                                                                    <div className={`p-3 rounded-2xl bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5 ${getColorForCategory(cred.category)}`}>{getIconForCategory(cred.category)}</div>
-                                                                    <div><h3 className="font-medium text-lg">{cred.name}</h3><p className="text-xs text-black/50 dark:text-white/50 bg-black/5 dark:bg-white/10 inline-block px-2 py-1 rounded-md mt-1">{cred.category}</p></div>
+                                                                    <div className={`p-3 rounded-2xl bg-black/5 dark:bg-white/5 border border-black/5 dark:border-white/5 ${cred.source === 'extension' ? 'text-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.2)]' : getColorForCategory(cred.category)}`}>
+                                                                        {cred.source === 'extension' ? <Globe className="w-5 h-5 animate-pulse" /> : getIconForCategory(cred.category)}
+                                                                    </div>
+                                                                    <div>
+                                                                        <h3 className="font-medium text-lg">{cred.name}</h3>
+                                                                        <div className="flex items-center gap-2 mt-1">
+                                                                            <p className="text-xs text-black/50 dark:text-white/50 bg-black/5 dark:bg-white/10 inline-block px-2 py-1 rounded-md">{cred.category}</p>
+                                                                            {cred.source === 'extension' && (
+                                                                                <p className="text-xs text-blue-600 dark:text-blue-400 bg-blue-500/10 inline-block px-2 py-1 rounded-md font-medium border border-blue-500/20">
+                                                                                    ⚡ Auto-Captured
+                                                                                </p>
+                                                                            )}
+                                                                        </div>
+                                                                    </div>
                                                                 </div>
                                                             </div>
                                                             <div className="space-y-4 mb-6">

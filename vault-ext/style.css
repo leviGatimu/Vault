@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+    background-color: #000;
+    color: #fff;
+    width: 350px;
+    /* Forces the popup to stay wide */
+    min-height: 480px;
+    /* Forces the popup to stay tall */
+    margin: 0;
+    /* Removes Chrome's default weird borders */
+    padding: 0;
+}
