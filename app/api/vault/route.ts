@@ -26,7 +26,8 @@ export async function GET() {
         // 2. Fetch from Supabase (The data captured by the Extension)
         const { data: extensionData, error } = await supabase
             .from('vault_logins')
-            .select('*');
+            .select('*')
+            .eq('user_id', user.id);
 
         // 3. Merge them together
         // We add a 'source' property so you can see if it was manual or captured
