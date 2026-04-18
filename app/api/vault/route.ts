@@ -1,78 +1,51 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { getServerSession } from "next-auth";
-import { createClient } from "@supabase/supabase-js"; // Import this
+import bcrypt from "bcryptjs";
 
-// Initialize Supabase (Ensure you have these env vars)
-const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY! // Use service key for backend access
-);
-
-export async function GET() {
-    try {
-        const session = await getServerSession();
-        if (!session?.user?.email) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-        const user = await db.user.findUnique({ where: { email: session.user.email } });
-        if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
-
-        // 1. Fetch from Prisma (Your existing manual credentials)
-        const credentials = await db.credential.findMany({
-            where: { userId: user.id },
-            orderBy: { createdAt: 'desc' }
-        });
-
-        // 2. Fetch from Supabase (The data captured by the Extension)
-        const { data: extensionData, error } = await supabase
-            .from('vault_logins')
-            .select('*')
-            .eq('user_id', user.id);
-
-        // 3. Merge them together
-        // We add a 'source' property so you can see if it was manual or captured
-        const manualItems = credentials.map(c => ({ ...c, source: 'manual' }));
-        const capturedItems = (extensionData || []).map(e => ({
-            id: e.id,
-            name: e.website,
-            username: e.username,
-            password: e.password,
-            category: 'Social', // Default category
-            source: 'extension'
-        }));
-
-        const combined = [...manualItems, ...capturedItems];
-
-        return NextResponse.json(combined);
-    } catch (error) {
-        console.error("Fetch Error:", error);
-        return NextResponse.json({ error: "Failed to fetch credentials" }, { status: 500 });
-    }
+export async function OPTIONS() {
+    return NextResponse.json({}, {
+        headers: {
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "POST, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type",
+        },
+    });
 }
-// POST: Save a new credential locked to the user
+
 export async function POST(req: Request) {
     try {
-        const session = await getServerSession();
-        if (!session?.user?.email) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        const { email, pin } = await req.json();
 
-        const user = await db.user.findUnique({ where: { email: session.user.email } });
-        if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
+        // 1. Find user in database
+        const user = await db.user.findUnique({ where: { email } });
 
-        const body = await req.json();
-        const { name, username, password, category } = body;
+        // 2. Safety check: does user exist and have a password field?
+        if (!user || !user.password) {
+            return NextResponse.json({ error: "Invalid Email or PIN" }, {
+                status: 401,
+                headers: { "Access-Control-Allow-Origin": "*" }
+            });
+        }
 
-        const newCredential = await db.credential.create({
-            data: {
-                name,
-                username,
-                password,
-                category: category || "Social",
-                userId: user.id, // Security: Lock data to this specific user!
-            },
+        // 3. Compare the PIN from extension with the 'password' field in DB
+        const isValid = await bcrypt.compare(pin, user.password);
+
+        if (!isValid) {
+            return NextResponse.json({ error: "Invalid Email or PIN" }, {
+                status: 401,
+                headers: { "Access-Control-Allow-Origin": "*" }
+            });
+        }
+
+        // 4. Success!
+        return NextResponse.json({ userId: user.id }, {
+            headers: { "Access-Control-Allow-Origin": "*" }
         });
 
-        return NextResponse.json(newCredential);
     } catch (error) {
-        return NextResponse.json({ error: "Failed to save credential" }, { status: 500 });
+        return NextResponse.json({ error: "Internal Server Error" }, {
+            status: 500,
+            headers: { "Access-Control-Allow-Origin": "*" }
+        });
     }
 }

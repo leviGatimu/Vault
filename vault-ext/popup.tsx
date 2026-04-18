@@ -20,7 +20,9 @@ export default function Popup() {
 
         try {
             // Point this to your live Vercel URL when you deploy!
-            const response = await fetch("http://localhost:3000/api/ext-login", {
+            // Replace this with your actual Vercel project URL (e.g., https://your-project.vercel.app)
+            // Replace 'vault-saas-abc123.vercel.app' with your ACTUAL URL from the dashboard
+            const response = await fetch("https://vault-one-peach.vercel.app/api/ext-login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email, password }),
