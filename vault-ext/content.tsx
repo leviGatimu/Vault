@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { ShieldCheck, X } from "lucide-react";
 // Import the supabase client we created
 import { supabase } from "./supabase";
+import { Storage } from "@plasmohq/storage";
 
 export const config: PlasmoCSConfig = {
     matches: ["<all_urls>"]
@@ -41,35 +42,34 @@ export default function VaultContentOverlay() {
         if (!capturedData) return;
         setShowPrompt(false);
 
-        // 1. Ask Chrome for the logged-in User ID
-        chrome.storage.local.get(["overseerUserId"], async (result) => {
-            const userId = result.overseerUserId;
+        // 1. Initialize Plasmo Storage
+        const storage = new Storage();
+        const userId = await storage.get("overseerUserId");
 
-            // 2. If they aren't logged in, stop the process
-            if (!userId) {
-                console.warn("Overseer: Cannot save password. Extension is not logged in.");
-                return;
-            }
+        // 2. If they aren't logged in, stop the process
+        if (!userId) {
+            console.warn("Overseer: Cannot save password. Extension is not logged in.");
+            return;
+        }
 
-            try {
-                // 3. Save to Supabase with the attached user_id!
-                const { error } = await supabase
-                    .from('vault_logins')
-                    .insert([
-                        {
-                            website: capturedData.site,
-                            username: capturedData.username,
-                            password: capturedData.pass,
-                            user_id: userId // <--- BOOM. SECURED.
-                        }
-                    ]);
+        try {
+            // 3. Save to Supabase with the attached user_id
+            const { error } = await supabase
+                .from('vault_logins')
+                .insert([
+                    {
+                        website: capturedData.site,
+                        username: capturedData.username,
+                        password: capturedData.pass,
+                        user_id: userId // Secured.
+                    }
+                ]);
 
-                if (error) console.error("Database Error:", error.message);
-                else console.log("✅ SUCCESS: Secured to User Vault.");
-            } catch (err) {
-                console.error("Vault Network Error:", err);
-            }
-        });
+            if (error) console.error("Database Error:", error.message);
+            else console.log("✅ SUCCESS: Secured to User Vault.");
+        } catch (err) {
+            console.error("Vault Network Error:", err);
+        }
     };
 
     const handleSkip = () => {

@@ -49,7 +49,7 @@ export default function Popup() {
     };
 
     return (
-        <div className="w-80 p-6 bg-[#020617] text-white font-sans border border-white/10 rounded-xl">
+        <div className="w-80 min-h-[260px] p-6 bg-[#020617] text-white font-sans flex flex-col">
             <div className="flex items-center gap-2 mb-6">
                 <div className="w-8 h-8 bg-emerald-500/20 rounded-lg flex items-center justify-center border border-emerald-500/30">
                     <span className="text-emerald-500 font-bold">V</span>

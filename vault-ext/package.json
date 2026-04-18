@@ -11,13 +11,16 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "@plasmohq/storage": "^1.15.0",
     "@supabase/supabase-js": "^2.103.3",
+    "bcrypt": "^6.0.0",
     "lucide-react": "^1.8.0",
     "plasmo": "^0.90.5",
     "react": "^19.2.5",
     "react-dom": "^19.2.5"
   },
   "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "autoprefixer": "^10.5.0",

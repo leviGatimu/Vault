@@ -13,3 +13,13 @@ body {
     /* Removes Chrome's default weird borders */
     padding: 0;
 }
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    width: 320px;
+    /* Matches Tailwind's w-80 */
+    background-color: #020617;
+    /* Matches your sleek navy background */
+}
