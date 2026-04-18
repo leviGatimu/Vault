@@ -7,4 +7,5 @@ if (!supabaseUrl || !supabaseKey) {
     console.error("Overseer Error: Supabase keys are missing from your .env file!")
 }
 
-export const supabase = createClient(supabaseUrl, supabaseKey)
+// Add the exclamation marks !
+export const supabase = createClient(supabaseUrl!, supabaseKey!)
