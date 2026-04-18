@@ -41,22 +41,35 @@ export default function VaultContentOverlay() {
         if (!capturedData) return;
         setShowPrompt(false);
 
-        console.log("Attempting to save:", capturedData.site); // Check if this triggers
+        // 1. Ask Chrome for the logged-in User ID
+        chrome.storage.local.get(["overseerUserId"], async (result) => {
+            const userId = result.overseerUserId;
 
-        const { data, error } = await supabase
-            .from('vault_logins')
-            .insert([{
-                website: capturedData.site,
-                username: capturedData.username,
-                password: capturedData.pass
-            }]);
+            // 2. If they aren't logged in, stop the process
+            if (!userId) {
+                console.warn("Overseer: Cannot save password. Extension is not logged in.");
+                return;
+            }
 
-        if (error) {
-            console.error("❌ SUPABASE ERROR:", error.message);
-            console.error("Full Error Object:", error);
-        } else {
-            console.log("✅ SUCCESS: Data is in the vault.");
-        }
+            try {
+                // 3. Save to Supabase with the attached user_id!
+                const { error } = await supabase
+                    .from('vault_logins')
+                    .insert([
+                        {
+                            website: capturedData.site,
+                            username: capturedData.username,
+                            password: capturedData.pass,
+                            user_id: userId // <--- BOOM. SECURED.
+                        }
+                    ]);
+
+                if (error) console.error("Database Error:", error.message);
+                else console.log("✅ SUCCESS: Secured to User Vault.");
+            } catch (err) {
+                console.error("Vault Network Error:", err);
+            }
+        });
     };
 
     const handleSkip = () => {

@@ -1,86 +1,81 @@
-import "./style.css";
 import { useState, useEffect } from "react";
-import { Copy, RefreshCw, Check, ShieldCheck, Settings2 } from "lucide-react";
+import "./style.css";
 
 export default function Popup() {
+    const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [length, setLength] = useState(16);
-    const [options, setOptions] = useState({ upper: true, lower: true, numbers: true, symbols: true });
-    const [copied, setCopied] = useState(false);
+    const [userId, setUserId] = useState<string | null>(null);
+    const [status, setStatus] = useState<"idle" | "loading" | "error">("idle");
 
-    const generatePassword = () => {
-        let charset = "";
-        if (options.upper) charset += "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        if (options.lower) charset += "abcdefghijklmnopqrstuvwxyz";
-        if (options.numbers) charset += "0123456789";
-        if (options.symbols) charset += "!@#$%^&*()_+~`|}{[]:;?><,./-=";
-        if (charset === "") charset = "abcdefghijklmnopqrstuvwxyz";
+    // Check if they are already logged in when they open the popup
+    useEffect(() => {
+        chrome.storage.local.get(["overseerUserId"], (result: { [key: string]: any }) => {
+            if (result.overseerUserId) setUserId(result.overseerUserId);
+        });
+    }, []);
 
-        let newPassword = "";
-        for (let i = 0; i < length; i++) {
-            newPassword += charset[Math.floor(Math.random() * charset.length)];
+    const handleLogin = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setStatus("loading");
+
+        try {
+            // Point this to your live Vercel URL when you deploy!
+            const response = await fetch("http://localhost:3000/api/ext-login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, password }),
+            });
+
+            if (!response.ok) throw new Error("Login failed");
+
+            const data = await response.json();
+
+            // Save the ID to Chrome storage
+            chrome.storage.local.set({ overseerUserId: data.userId }, () => {
+                setUserId(data.userId);
+                setStatus("idle");
+            });
+
+        } catch (error) {
+            console.error(error);
+            setStatus("error");
         }
-        setPassword(newPassword);
     };
 
-    useEffect(() => { generatePassword(); }, [length, options]);
-
-    const copyToClipboard = () => {
-        navigator.clipboard.writeText(password);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-    };
-
-    const toggleOption = (key: keyof typeof options) => {
-        setOptions(prev => ({ ...prev, [key]: !prev[key] }));
+    const handleLogout = () => {
+        chrome.storage.local.remove(["overseerUserId"], () => {
+            setUserId(null);
+        });
     };
 
     return (
-        <div className="w-[350px] p-6 bg-black text-white font-sans border border-white/10">
-            <div className="flex items-center gap-3 mb-6 pb-4 border-b border-white/10">
-                <div className="p-2 bg-emerald-500/10 rounded-xl">
-                    <ShieldCheck className="w-5 h-5 text-emerald-400" />
+        <div className="w-80 p-6 bg-[#020617] text-white font-sans border border-white/10 rounded-xl">
+            <div className="flex items-center gap-2 mb-6">
+                <div className="w-8 h-8 bg-emerald-500/20 rounded-lg flex items-center justify-center border border-emerald-500/30">
+                    <span className="text-emerald-500 font-bold">V</span>
                 </div>
-                <div>
-                    <h2 className="font-medium tracking-wide text-sm">Vault Generator</h2>
-                    <p className="text-xs text-white/50">Military-grade encryption</p>
-                </div>
+                <h1 className="text-xl font-medium tracking-wide">Overseer</h1>
             </div>
 
-            <div className="relative mb-6">
-                <div className="w-full bg-white/5 border border-white/10 rounded-2xl p-4 pr-24 font-mono text-lg break-all min-h-[4rem] flex items-center">
-                    {password}
+            {userId ? (
+                <div className="text-center py-4">
+                    <div className="w-12 h-12 bg-emerald-500/10 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-3">✓</div>
+                    <h2 className="text-lg font-medium mb-1">Vault Connected</h2>
+                    <p className="text-xs text-white/50 mb-6">Auto-capture is active and securing your logins.</p>
+                    <button onClick={handleLogout} className="w-full py-2 bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors rounded-lg text-sm font-medium">Disconnect</button>
                 </div>
-                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1">
-                    <button onClick={generatePassword} className="p-2 text-white/50 hover:text-white hover:bg-white/10 rounded-xl transition-all">
-                        <RefreshCw className="w-4 h-4" />
+            ) : (
+                <form onSubmit={handleLogin} className="space-y-3">
+                    <input type="email" placeholder="Email Address" value={email} onChange={(e) => setEmail(e.target.value)} required className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-emerald-500/50 transition-colors" />
+                    <input type="password" placeholder="Master Password" value={password} onChange={(e) => setPassword(e.target.value)} required className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:border-emerald-500/50 transition-colors" />
+
+                    {status === "error" && <p className="text-xs text-red-400 text-center">Invalid credentials. Try again.</p>}
+
+                    <button type="submit" disabled={status === "loading"} className="w-full bg-white text-black py-2.5 rounded-lg text-sm font-medium hover:bg-white/90 transition-colors disabled:opacity-50 mt-2">
+                        {status === "loading" ? "Authenticating..." : "Connect Vault"}
                     </button>
-                    <button onClick={copyToClipboard} className={`p-2 rounded-xl transition-all flex items-center gap-2 ${copied ? 'bg-emerald-500/20 text-emerald-400' : 'bg-white text-black hover:shadow-lg'}`}>
-                        {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                    </button>
-                </div>
-            </div>
-
-            <div className="space-y-5">
-                <div>
-                    <div className="flex justify-between items-center mb-2">
-                        <label className="text-xs font-medium text-white/70 flex items-center gap-2">
-                            <Settings2 className="w-3.5 h-3.5" /> Password Length
-                        </label>
-                        <span className="text-xs font-mono bg-white/10 px-2 py-1 rounded-md">{length}</span>
-                    </div>
-                    <input type="range" min="8" max="32" value={length} onChange={(e) => setLength(parseInt(e.target.value))} className="w-full h-1.5 bg-white/20 rounded-lg appearance-none cursor-pointer accent-white" />
-                </div>
-
-                <div className="grid grid-cols-2 gap-3 pt-2">
-                    {['upper', 'lower', 'numbers', 'symbols'].map((opt) => (
-                        <button key={opt} onClick={() => toggleOption(opt as keyof typeof options)} className={`px-3 py-2.5 rounded-xl text-xs font-medium transition-all flex items-center justify-between border ${options[opt as keyof typeof options] ? 'bg-white/10 border-white/20 text-white' : 'bg-transparent border-white/5 text-white/40 hover:bg-white/5'}`}>
-                            {opt.toUpperCase()}
-                            <div className={`w-2 h-2 rounded-full ${options[opt as keyof typeof options] ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-white/10'}`} />
-                        </button>
-                    ))}
-                </div>
-            </div>
+                </form>
+            )}
         </div>
     );
 }
