@@ -2,7 +2,7 @@ import type { PlasmoCSConfig } from "plasmo";
 import { useState, useEffect } from "react";
 import { ShieldCheck, X } from "lucide-react";
 // Import the supabase client we created
-import { supabase } from "./supabase.ts";
+import { supabase } from "./supabase";
 
 export const config: PlasmoCSConfig = {
     matches: ["<all_urls>"]
